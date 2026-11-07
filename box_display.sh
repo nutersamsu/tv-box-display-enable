@@ -1,8 +1,9 @@
 #!/bin/sh
 # box_display.sh: instala o relógio 24h no display frontal FD655 da TV box S905X3 com Armbian.
-# Mostra HH:MM com os dois-pontos piscando e acende os ícones de rede cabeada, Wi-Fi e USB.
+# Mostra HH:MM com os dois-pontos piscando e os ícones de rede cabeada, Wi-Fi e USB.
+# Rede/Wi-Fi: acesos com internet, piscando sem internet (ping 1.1.1.1/8.8.8.8), apagados sem conexão.
 # Pinos: GPIOH_6 = DAT (linha 22) e GPIOH_7 = CLK (linha 23) do gpiochip "periphs-banks".
-# Não precisa de pacotes extras: só python3 e o /dev/gpiochip (GPIO uAPI v2).
+# Não precisa de pacotes extras: só python3, ping e o /dev/gpiochip (GPIO uAPI v2).
 #
 # Instalado e testado em 07/11/2026 em:
 #   Box:      T95 Max+ (Amlogic S905X3, 4 GB RAM, eMMC 32 GB), display frontal FD655 (4 dígitos)
@@ -34,12 +35,14 @@ cat > "$BIN" <<'PYEOF'
 #!/usr/bin/env python3
 """Relógio 24h no display FD655 da TV box (Armbian), por bit-bang no /dev/gpiochip.
 Protocolo e tempos copiados do driver do Android (ver FD655-protocolo.md).
-Os dois-pontos piscam a cada segundo. Ícones: rede cabeada (0x20) e Wi-Fi (0x40)
-acendem quando a interface física correspondente está conectada (operstate up);
+Os dois-pontos piscam a cada segundo. Ícones de rede cabeada (0x20) e Wi-Fi (0x40):
+acesos com a interface conectada e internet funcionando, piscando com a interface
+conectada mas sem internet, apagados com a interface desconectada.
+A internet é testada por ping (1.1.1.1 e 8.8.8.8) numa thread: a cada 30 s, ou 10 s quando caiu.
 USB (0x02) acende quando há algum dispositivo USB que não seja hub.
 O display apaga quando o serviço para.
 """
-import fcntl, os, signal, struct, sys, time
+import fcntl, os, signal, struct, subprocess, sys, threading, time
 
 DAT, CLK = 22, 23          # GPIOH_6, GPIOH_7 no banco de periféricos
 DELAY = 0.0005             # ~500 us, igual ao Android
@@ -151,6 +154,19 @@ def usb_icon():
     return 0
 
 
+PING_ALVOS = ('1.1.1.1', '8.8.8.8')
+internet_ok = True                    # começa "ok" para não piscar à toa no boot
+
+
+def vigia_internet():
+    global internet_ok
+    while True:
+        ok = any(subprocess.run(['ping', '-c', '1', '-W', '2', alvo], stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL).returncode == 0 for alvo in PING_ALVOS)
+        internet_ok = ok
+        time.sleep(30 if ok else 10)
+
+
 def main():
     disp = FD655()
     running = True
@@ -161,11 +177,16 @@ def main():
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
 
+    threading.Thread(target=vigia_internet, daemon=True).start()
     last = None
     while running:
         now = time.localtime()
         hhmm = time.strftime('%H%M', now)
-        icons = (COLON if now.tm_sec % 2 == 0 else 0) | net_icons() | usb_icon()
+        par = now.tm_sec % 2 == 0
+        rede = net_icons()
+        if not internet_ok and not par:
+            rede = 0                          # sem internet: ícone de rede pisca
+        icons = (COLON if par else 0) | rede | usb_icon()
         digits = [DIGIT[int(c)] for c in hhmm]
         if (hhmm, icons) != last:
             if last is None or hhmm != last[0] or now.tm_sec == 0:

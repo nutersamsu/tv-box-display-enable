@@ -1,6 +1,6 @@
 # Mini desmontador ARM32 (so o necessario para ler o driver fd655 do kernel Android)
 import struct,bisect,sys
-BASE=0xc0008000
+BASE=0xc0108000
 d=open(sys.argv[1],'rb').read()
 syms=sorted((int(l[:8],16),l[11:].strip()) for l in open(sys.argv[2]))
 A=[a for a,_ in syms]
