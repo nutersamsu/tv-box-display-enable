@@ -3,6 +3,19 @@
 Relógio 24h no display frontal FD655 da TV box S905X3 (T95 Max+) rodando Armbian.
 Mostra HH:MM com os dois-pontos piscando e acende os ícones de rede cabeada, Wi-Fi e USB.
 
+## Box testada
+
+Instalado e testado em 07/11/2026 em:
+
+- **Box:** T95 Max+ (Amlogic S905X3, 4 GB RAM, eMMC 32 GB), display frontal FD655 de 4 dígitos
+- **Firmware Android de fábrica:** T95MAX+-X3-9.0-2GB4GB (Android 9, kernel 4.9.113)
+- **Sistema:** Armbian / Debian 13 (trixie), kernel 6.18.49-meson64, rodando pelo cartão microSD,
+  `box=s905x3_generic`, device tree "Meson SM1 ac2xx reference board minimal 100M"
+- **Testes:** dígitos e ícones conferidos no display, e o serviço volta sozinho após reboot
+
+Outra box pode usar pinos, ordem de segmentos ou bits de ícone diferentes.
+Use `tools/fd655_test.py` e `tools/fd655-icon-scan.py` para conferir.
+
 ## Instalação
 
 ```sh

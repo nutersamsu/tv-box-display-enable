@@ -4,6 +4,14 @@
 # Pinos: GPIOH_6 = DAT (linha 22) e GPIOH_7 = CLK (linha 23) do gpiochip "periphs-banks".
 # Não precisa de pacotes extras: só python3 e o /dev/gpiochip (GPIO uAPI v2).
 #
+# Instalado e testado em 07/11/2026 em:
+#   Box:      T95 Max+ (Amlogic S905X3, 4 GB RAM, eMMC 32 GB), display frontal FD655 (4 dígitos)
+#             Firmware Android de fábrica: T95MAX+-X3-9.0-2GB4GB (Android 9, kernel 4.9.113)
+#   Sistema:  Armbian / Debian 13 (trixie), kernel 6.18.49-meson64, rodando pelo cartão microSD
+#             boot.config: box=s905x3_generic; device tree: "Meson SM1 ac2xx reference board minimal 100M"
+#   Testes:   dígitos e ícones conferidos no display; serviço volta sozinho após reboot
+#   Outra box pode usar pinos, ordem de segmentos ou bits de ícone diferentes.
+#
 # Uso (como root):
 #   sh box_display.sh            instala (ou atualiza) e inicia
 #   sh box_display.sh test       mostra 12:34 por 10 s (para o relógio durante o teste)
