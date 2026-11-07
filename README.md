@@ -1,4 +1,4 @@
-# tvbox-display
+# tv box-display-enable
 
 Relógio 24h no display frontal FD655 da TV box S905X3 (T95 Max+) rodando Armbian.
 Mostra HH:MM com os dois-pontos piscando e acende os ícones de rede cabeada, Wi-Fi e USB.
