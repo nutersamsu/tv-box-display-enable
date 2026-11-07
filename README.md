@@ -45,5 +45,3 @@ Só precisa de `python3`, sem pacotes extras. O bit-bang é feito direto no `/de
 - `tools/fd655_test.py`: teste avulso (mostra um texto de 4 caracteres e informa o ACK)
 - `tools/fd655-icon-scan.py`: acende um bit de ícone por vez para mapear as luzes
 - `tools/armdis.py`: mini desmontador ARM32 usado para ler o driver do kernel Android
-
-A cópia do kernel do Android (`android-dump/`) não vai para o repositório.
